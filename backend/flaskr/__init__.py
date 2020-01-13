@@ -37,8 +37,9 @@ def create_app(test_config=None):
   '''
   @app.after_request
   def after_request(response):
-    response.headers.add('Access-Control-Allow-Origins','*')
+    response.headers.add('Access-Control-Allow-Origin','*')
     response.headers.add('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     return response
 
   '''
@@ -46,6 +47,16 @@ def create_app(test_config=None):
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  
+  #route handler to get categories
+  @app.route('/categories')
+  def get_categories():
+    categories=Category.query.all()
+    formatted_categories=[category.format() for category in categories]
+    categories_dict={}
+    for category in formatted_categories:
+      categories_dict[category['id']]=category['type']
+    return jsonify({'success':True, 'categories':categories_dict}), 200
 
 
   '''
@@ -93,7 +104,7 @@ def create_app(test_config=None):
   def delete_question(question_id):
     Question.query.filter_by(id=question_id).one_or_none().delete()
 
-    return jsonify({'success':True, 'deleted_question_id':question_id})
+    return jsonify({'success':True, 'deleted_question_id':question_id}), 200
 
   '''
   @TODO: 
@@ -105,8 +116,17 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
- # @app.route('/questions', methods=['POST'])
- # def add_question():
+
+  @app.route('/questions', methods=['POST'])
+  def add_question():
+    question=request.json['question']
+    answer=request.json['answer']
+    category=request.json['category']
+    difficulty=request.json['difficulty']
+    new_question=Question(question,answer,category,difficulty)
+    new_question.insert()
+    return jsonify({'success':True}),200
+    
 
   '''
   @TODO: 
