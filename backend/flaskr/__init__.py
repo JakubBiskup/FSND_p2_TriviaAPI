@@ -73,15 +73,21 @@ def create_app(test_config=None):
   '''
   @app.route('/questions')
   def display_questions():
+    
     categories=Category.query.all()
+    
     formatted_categories=[category.format() for category in categories]
     categories_dict={}
     for category in formatted_categories:
       categories_dict[category['id']]=category['type']
     selection=Question.query.all()
+    total_questions=len(selection)
+    # abort if requested page exceeds existing page number
+    if request.args.get('page',1,type=int)>((total_questions-1)//QUESTIONS_PER_PAGE)+1:
+      abort(404)
     current_questions=paginate_questions(request,selection)
 
-    total_questions=len(selection)
+    
 
     current_category=Category.query.first().format()  ##############################################change this line later##################################################################################
 
@@ -102,9 +108,15 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
-    Question.query.filter_by(id=question_id).one_or_none().delete()
+    try:
+      question_to_delete=Question.query.filter_by(id=question_id).one_or_none()
+      if question_to_delete is None:
+        abort(404)
+      question_to_delete.delete()
 
-    return jsonify({'success':True, 'deleted_question_id':question_id}), 200
+      return jsonify({'success':True, 'deleted_question_id':question_id}), 200
+    except:
+      abort(422)
 
   '''
   @TODO: 
@@ -123,6 +135,8 @@ def create_app(test_config=None):
     answer=request.json['answer']
     category=request.json['category']
     difficulty=request.json['difficulty']
+    if not difficulty or not category or not answer or not question:
+      abort(400)
     new_question=Question(question,answer,category,difficulty)
     new_question.insert()
     return jsonify({'success':True}),200
@@ -166,6 +180,17 @@ def create_app(test_config=None):
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({'success':False, 'error':400, 'message':'bad request'}), 400
+
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({'success':False, 'error':404, 'message':'resource not found'}), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({'success':False, 'error':422, 'message':'unprocessable'}), 422
   
   return app
 
