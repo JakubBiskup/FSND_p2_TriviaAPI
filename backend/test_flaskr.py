@@ -15,8 +15,15 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "trivia_test"
-        self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
+        self.database_path = "postgres://postgres:123@{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
+        self.new_question={
+            'question': 'Is this a test question?',
+            'answer':'Yes',
+            'category':2,
+            'difficulty':4
+        }
+        
 
         # binds the app to the current context
         with self.app.app_context():
@@ -24,10 +31,86 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
+            
     
     def tearDown(self):
         """Executed after reach test"""
         pass
+
+    def test_get_paginated_questions(self):
+        res=self.client().get('/questions')
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['categories'])
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['current_category'])
+    
+    def test_nonexistent_page_404(self):
+        res=self.client().get('/questions?page=1234')
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,404)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['error'],404)
+        self.assertTrue(data['message'])
+
+    def test_get_all_six_categories(self):
+        res=self.client().get('/categories')
+        data=json.loads(res.data)
+        
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertTrue(data['categories'])
+        self.assertEqual(len(data['categories']),6)
+
+    def test_add_question(self):
+        res=self.client().post('/questions', json=self.new_question)
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertTrue(data['added_question_id'])
+        
+
+    def test_add_question_without_required_fields_400(self):
+        res=self.client().post('/questions',json={
+            'question':'',
+            'answer':'',
+            'difficulty':1,
+            'category':1
+
+        })
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,400)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['error'],400)
+        self.assertTrue(data['message'])
+
+
+    def test_delete_question(self):
+        res=self.client().delete('/questions/40') #############only works once, need to manually change the id every time########################################
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+
+
+    def test_delete_nonexistent_question_404(self):
+        res=self.client().delete('/questions/5000')
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,404)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['error'],404)
+        self.assertTrue(data['message'])
+        
+
+    
+
 
     """
     TODO

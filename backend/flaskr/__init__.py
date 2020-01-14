@@ -108,15 +108,14 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
-    try:
-      question_to_delete=Question.query.filter_by(id=question_id).one_or_none()
-      if question_to_delete is None:
-        abort(404)
-      question_to_delete.delete()
+    question_to_delete=Question.query.filter(Question.id == question_id).one_or_none()
+    if question_to_delete is None:
+      abort(404)
+    question_to_delete.delete()
 
-      return jsonify({'success':True, 'deleted_question_id':question_id}), 200
-    except:
-      abort(422)
+    return jsonify({'success':True}), 200
+      
+
 
   '''
   @TODO: 
@@ -139,7 +138,7 @@ def create_app(test_config=None):
       abort(400)
     new_question=Question(question,answer,category,difficulty)
     new_question.insert()
-    return jsonify({'success':True}),200
+    return jsonify({'success':True,'added_question_id':new_question.id}),200 
     
 
   '''
