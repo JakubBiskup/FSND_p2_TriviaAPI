@@ -37,9 +37,10 @@ def create_app(test_config=None):
   '''
   @app.after_request
   def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin','*')
+    response.headers.add('Access-Control-Allow-Origin','http://localhost:3000')
     response.headers.add('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
   '''
@@ -129,16 +130,23 @@ def create_app(test_config=None):
   '''
 
   @app.route('/questions', methods=['POST'])
-  def add_question():
-    question=request.json['question']
-    answer=request.json['answer']
-    category=request.json['category']
-    difficulty=request.json['difficulty']
-    if not difficulty or not category or not answer or not question:
-      abort(400)
-    new_question=Question(question,answer,category,difficulty)
-    new_question.insert()
-    return jsonify({'success':True,'added_question_id':new_question.id}),200 
+  def add_or_search_question():
+    search=request.json.get('searchTerm')
+    if search:
+      selection=Question.query.filter(Question.question.ilike(f'%{search}%'))
+      results_number=selection.count()
+      current_questions=paginate_questions(request,selection)
+      return jsonify({'success':True,'questions':current_questions,'search_term':search,'results_number':results_number})
+    else:
+      question=request.json['question']
+      answer=request.json['answer']
+      category=request.json['category']
+      difficulty=request.json['difficulty']
+      if not difficulty or not category or not answer or not question:
+        abort(400)
+      new_question=Question(question,answer,category,difficulty)
+      new_question.insert()
+      return jsonify({'success':True,'added_question_id':new_question.id}),200 
     
 
   '''
@@ -150,14 +158,7 @@ def create_app(test_config=None):
   TEST: Search by any phrase. The questions list will update to include 
   only question that include that string within their question. 
   Try using the word "title" to start. 
-  '''
-  @app.route('/questions/search',methods=['POST'])
-  def search_questions():
-    search_term=request.json['search']
-    selection=Question.query.filter(Question.question.ilike(f'%{search_term}%'))
-    results_number=selection.count()
-    current_questions=paginate_questions(request,selection)
-    return jsonify({'success':True,'questions':current_questions,'search_term':search_term,'results_number':results_number})
+  '''#done above
 
   '''
   @TODO: 
