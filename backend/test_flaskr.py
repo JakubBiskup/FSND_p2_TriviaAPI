@@ -119,7 +119,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['message'])
     
     def test_search_with_results(self):
-        res=self.client().post('questions', json={'searchTerm':'test'}) ##
+        res=self.client().post('questions', json={'searchTerm':'test'}) 
         data=json.loads(res.data)
 
         self.assertEqual(res.status_code,200)
@@ -134,9 +134,26 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code,200)
         self.assertEqual(data['search_term'],'sthnonexistenttest')
         self.assertEqual(data['results_number'],0)
-        
-        
+    
+    def test_viewing_by_category(self):
+        res=self.client().get('categories/2/questions')
+        data=json.loads(res.data)
 
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertTrue(data['questions'])
+        for question in data['questions']:
+            self.assertEqual(question['category'],2) ######
+        self.assertEqual(data['current_category'],{'id':2,'type':'Art'})
+        
+    def test_viewing_by_nonexistent_category_404(self):
+        res=self.client().get('categories/85/questions')
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,404)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['error'],404)
+        self.assertTrue(data['message'])
     
 
 

@@ -136,7 +136,7 @@ def create_app(test_config=None):
       selection=Question.query.filter(Question.question.ilike(f'%{search}%'))
       results_number=selection.count()
       current_questions=paginate_questions(request,selection)
-      return jsonify({'success':True,'questions':current_questions,'search_term':search,'results_number':results_number})
+      return jsonify({'success':True,'questions':current_questions,'search_term':search,'results_number':results_number}),200
     else:
       question=request.json['question']
       answer=request.json['answer']
@@ -168,6 +168,17 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions')
+  def display_questions_based_on_category(category_id):
+    if category_id>6 or category_id<1:
+      abort(404)
+    selection=Question.query.filter(Question.category==category_id)
+    questions_number=selection.count()
+    current_questions=paginate_questions(request,selection)
+    current_category=Category.query.filter_by(id=category_id).first().format()
+    return jsonify({'success':True,'questions':current_questions,'current_category':current_category}),200
+
+
 
 
   '''
