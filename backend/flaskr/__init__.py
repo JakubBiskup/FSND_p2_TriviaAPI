@@ -113,7 +113,7 @@ def create_app(test_config=None):
       abort(404)
     question_to_delete.delete()
 
-    return jsonify({'success':True}), 200
+    return jsonify({'success':True,'deleted_question_id':question_id}), 200
       
 
 
@@ -151,6 +151,13 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/questions/search',methods=['POST'])
+  def search_questions():
+    search_term=request.json['search']
+    selection=Question.query.filter(Question.question.ilike(f'%{search_term}%'))
+    results_number=selection.count()
+    current_questions=paginate_questions(request,selection)
+    return jsonify({'success':True,'questions':current_questions,'search_term':search_term,'results_number':results_number})
 
   '''
   @TODO: 

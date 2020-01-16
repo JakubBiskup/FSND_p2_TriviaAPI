@@ -92,11 +92,21 @@ class TriviaTestCase(unittest.TestCase):
 
 
     def test_delete_question(self):
-        res=self.client().delete('/questions/40') #############only works once, need to manually change the id every time########################################
+        #adds a new question to the database (so there's always something to delete) and then deletes it
+        res0=self.client().post('/questions', json=self.new_question)
+        data0=json.loads(res0.data)
+        
+        self.assertEqual(res0.status_code,200)
+        self.assertEqual(data0['success'],True)
+        self.assertTrue(data0['added_question_id'])
+        id_of_question_to_delete=data0['added_question_id']
+        
+        res=self.client().delete('/questions/{}'.format(id_of_question_to_delete)) 
         data=json.loads(res.data)
 
         self.assertEqual(res.status_code,200)
         self.assertEqual(data['success'],True)
+        self.assertEqual(data['deleted_question_id'],id_of_question_to_delete)
 
 
     def test_delete_nonexistent_question_404(self):
@@ -107,6 +117,24 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'],False)
         self.assertEqual(data['error'],404)
         self.assertTrue(data['message'])
+    
+    def test_search_with_results(self):
+        res=self.client().post('questions/search', json={'search':'test'}) ##
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertTrue(data['questions'])
+        self.assertEqual(data['search_term'],'test')
+        self.assertTrue(data['results_number'])
+
+    def test_search_without_results(self):
+        res=self.client().post('questions/search', json={'search':'sthnonexistenttest'})
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['search_term'],'sthnonexistenttest')
+        self.assertEqual(data['results_number'],0)
+        
         
 
     
