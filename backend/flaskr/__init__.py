@@ -27,10 +27,7 @@ def create_app(test_config=None):
   app = Flask(__name__)
   setup_db(app)
   
-  '''
-  @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-  '''
-  cors=CORS(app)  
+  cors=CORS(app, resources={r"/api/*": {"origins": "*"}})  
 
   @app.after_request
   def after_request(response):
@@ -85,7 +82,7 @@ def create_app(test_config=None):
     if search: 
       selection=Question.query.filter(Question.question.ilike(f'%{search}%'))
       results_number=selection.count()
-      current_questions=paginate_questions(request,selection)
+      current_questions=[question.format() for question in selection]
       return jsonify({'success':True,'questions':current_questions,'search_term':search,'results_number':results_number}),200
     #if there is no search term included in the request body, the function will try to post a new question
     else:
