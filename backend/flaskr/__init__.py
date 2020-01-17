@@ -176,7 +176,7 @@ def create_app(test_config=None):
     questions_number=selection.count()
     current_questions=paginate_questions(request,selection)
     current_category=Category.query.filter_by(id=category_id).first().format()
-    return jsonify({'success':True,'questions':current_questions,'current_category':current_category}),200
+    return jsonify({'success':True,'questions':current_questions,'current_category':current_category,'num_of_questions_in_this_category':questions_number}),200
 
 
 
@@ -192,6 +192,39 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=['POST'])
+  def play_the_quiz():
+    category=request.json.get('quiz_category')
+    previous_questions=request.json.get('previous_questions')
+    if category['id']==0:
+      questions_whole=[question.format() for question in Question.query.all()]
+      if len(questions_whole)==len(previous_questions):
+        return jsonify({'success':True,'quiz_category':category,'question':None,'previous_questions':previous_questions}),200
+      if len(previous_questions)>0:
+        s=set(previous_questions)
+        questions=[question['id'] for question in questions_whole]
+        questions_to_choose_from=[x for x in questions if x not in s]
+        chosen_question_id=random.choice(questions_to_choose_from)
+        current_question=Question.query.filter(Question.id==chosen_question_id).one_or_none().format()
+        return jsonify({'success':True,'quiz_category':category,'question':current_question,'previous_questions':previous_questions}),200
+      else:
+        current_question=random.choice(questions_whole)
+        return jsonify({'success':True,'quiz_category':category,'question':current_question,'previous_questions':previous_questions}),200
+    else:
+      questions_in_this_category_whole=[question.format() for question in Question.query.filter(Question.category==category['id'])]
+      if len(questions_in_this_category_whole)==len(previous_questions):
+        return jsonify({'success':True,'quiz_category':category,'question':None,'previous_questions':previous_questions}),200
+      if len(previous_questions)>0:
+        s=set(previous_questions)
+        questions_in_this_category=[question['id'] for question in questions_in_this_category_whole]
+        questions_to_choose_from=[x for x in questions_in_this_category if x not in s]
+        chosen_question_id=random.choice(questions_to_choose_from)
+        current_question=Question.query.filter(Question.id==chosen_question_id).one_or_none().format()
+        return jsonify({'success':True,'quiz_category':category,'question':current_question,'previous_questions':previous_questions}),200
+      else:
+        current_question=random.choice(questions_in_this_category_whole)
+        return jsonify({'success':True,'quiz_category':category,'question':current_question,'previous_questions':previous_questions}),200
+
 
   '''
   @TODO: 
@@ -209,6 +242,11 @@ def create_app(test_config=None):
   @app.errorhandler(422)
   def unprocessable(error):
     return jsonify({'success':False, 'error':422, 'message':'unprocessable'}), 422
+  
+  @app.errorhandler(500)
+  def internal_server_error(error):
+    return jsonify({'success':False, 'error':500, 'message':'internal server error'}), 500
+
   
   return app
 

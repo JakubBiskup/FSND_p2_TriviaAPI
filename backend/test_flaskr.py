@@ -155,6 +155,26 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['error'],404)
         self.assertTrue(data['message'])
     
+    def test_playing_with_all_categories(self):
+        res=self.client().post('/quizzes',json={'previous_questions':[],'quiz_category':{'id':0,'type':'click'}})
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertTrue(data['question'])
+        self.assertEqual(data['quiz_category'],{'id':0,'type':'click'})
+        self.assertEqual(data['previous_questions'],[])
+
+    def test_playing_art(self):
+        res=self.client().post('/quizzes',json={'previous_questions':[],'quiz_category':{'id':2,'type':'Art'}})
+        data=json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertTrue(data['question']) 
+        self.assertEqual(data['quiz_category'],{'id':2,'type':'Art'})
+        self.assertEqual(data['previous_questions'],[])
+        self.assertEqual(data['question']['category'],2) 
 
 
     """
