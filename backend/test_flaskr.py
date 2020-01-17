@@ -46,8 +46,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_questions'])
         self.assertTrue(data['categories'])
         self.assertTrue(data['questions'])
-        self.assertTrue(data['current_category'])
-    
+        
     def test_nonexistent_page_404(self):
         res=self.client().get('/questions?page=1234')
         data=json.loads(res.data)
@@ -143,7 +142,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'],True)
         self.assertTrue(data['questions'])
         for question in data['questions']:
-            self.assertEqual(question['category'],2) ######
+            self.assertEqual(question['category'],2) 
         self.assertEqual(data['current_category'],{'id':2,'type':'Art'})
         
     def test_viewing_by_nonexistent_category_404(self):
