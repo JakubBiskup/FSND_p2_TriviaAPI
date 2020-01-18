@@ -51,6 +51,7 @@ dropdb trivia_test
 createdb trivia_test
 psql trivia_test < trivia.psql
 ```
+next, change the self.database_path in test_flaskr.py (line 18) to match your PostgreSQL user and password.  
 Then you can run tests by running from the `/backend` directory:
 ```bash
 python test_flaskr.py
