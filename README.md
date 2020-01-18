@@ -183,10 +183,10 @@ Sample: `curl http://localhost:5000/categories`
 Deletes a question of a given id from the database and returns success value and id of the deleted question
 
 #### POST /questions
-Searches the questions by a given search term or adds a new question.
-If the 'searchTerm' is included in the request body, the function will search the questions by a given term and not post a question.
-The search returns a success value, list of questions matching, number of questions matching and the search term.
-If there is no search term included in the request body, the function will post a new question with given question and answer texts, category and difficulty.
+Searches the questions by a given search term or adds a new question.  
+If the 'searchTerm' is included in the request body, the function will search the questions by a given term and not post a question.  
+The search returns a success value, list of questions matching, number of questions matching and the search term.  
+If there is no search term included in the request body, the function will post a new question with given question and answer texts, category and difficulty.  
 Posting a question returns success value and added question's id.
 
 #### GET /categories/<int:category_id>/questions
