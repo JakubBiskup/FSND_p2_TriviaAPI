@@ -181,18 +181,104 @@ Sample: `curl http://localhost:5000/categories`
 }
 ```
 #### DELETE /questions/<int:question_id>
-Deletes a question of a given id from the database and returns success value and id of the deleted question
+Deletes a question of a given id from the database and returns success value and id of the deleted question.
+Sample: `curl -X DELETE http://localhost:5000/questions/36`
+```
+{
+  "deleted_question_id": 36,
+  "success": true
+}
+```
 
 #### POST /questions
 Searches the questions by a given search term or adds a new question.  
 If the 'searchTerm' is included in the request body, the function will search the questions by a given term and not post a question.  
-The search returns a success value, list of questions matching, number of questions matching and the search term.  
+The search returns a success value, list of questions matching, number of questions matching and the search term.
+Search sample: `curl -d '{"searchTerm":"title"}' -H "Content-Type: application/json" -X POST http://localhost:5000/questions`
+```
+{
+  "questions": [
+    {
+      "answer": "Maya Angelou",
+      "category": 4,
+      "difficulty": 2,
+      "id": 5,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+    },
+    {
+      "answer": "Edward Scissorhands",
+      "category": 5,
+      "difficulty": 3,
+      "id": 6,
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    }
+  ],
+  "results_number": 2,
+  "search_term": "title",
+  "success": true
+}
+```
 If there is no search term included in the request body, the function will post a new question with given question and answer texts, category and difficulty.  
 Posting a question returns success value and added question's id.
+Post a new question Sample: `curl -d '{"question":"This is question text?","answer":"This is answer text","difficulty":"4","category":1}' -H "Content-Type: application/json" -X POST http://localhost:5000/questions`
+```
+{
+  "added_question_id": 38,
+  "success": true
+}
+```
 
 #### GET /categories/<int:category_id>/questions
 Returns a success value, list of questions in a given category and a current category object
+Sample: `curl http://localhost:5000/categories/6/questions`
+```
+{
+  "current_category": {
+    "id": 6,
+    "type": "Sports"
+  },
+  "questions": [
+    {
+      "answer": "Brazil",
+      "category": 6,
+      "difficulty": 3,
+      "id": 10,
+      "question": "Which is the only team to play in every soccer World Cup tournament?"
+    },
+    {
+      "answer": "Uruguay",
+      "category": 6,
+      "difficulty": 4,
+      "id": 11,
+      "question": "Which country won the first ever soccer World Cup in 1930?"
+    }
+  ],
+  "questions_number": 2,
+  "success": true
+}
+```
 
 #### POST /quizzes
 This is an endpoint to play the trivia game. It returns success value, quiz category object, list of ids of previous questions and a randomly chosen question from that category which is not one of the previous questions.
+Sample: ` curl -d '{"previous_questions":[26,19],"quiz_category":{"type":"Art","id":"2"}}' -H "Content-Type: application/json" -X POST http://localhost:5000/quizzes`
+```
+{
+  "previous_questions": [
+    26,
+    19
+  ],
+  "question": {
+    "answer": "Mona Lisa",
+    "category": 2,
+    "difficulty": 3,
+    "id": 17,
+    "question": "La Giaconda is better known as what?"
+  },
+  "quiz_category": {
+    "id": "2",
+    "type": "Art"
+  },
+  "success": true
+}
+```
 
